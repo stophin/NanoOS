@@ -6,6 +6,7 @@ HOWTO:
  gcc, nasm, dd  
   Use the following commands to build an img:  
   $make clean  
+  $make raw  
   $make  
     
 2. Can run image in Linux or Windows.   
