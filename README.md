@@ -34,3 +34,6 @@ TODO:
  that I can't get the kernel readed into memory, so I've no ideal.  
    
 2. I don't quite understand the paging mechanism, so this is what to do and learn next.
+
+Preview:  
+![Alt text](https://github.com/stophin/NanoOS/blob/master/image/Preview.png)  
