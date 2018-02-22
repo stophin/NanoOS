@@ -157,6 +157,9 @@ void task2(void *pParam, void *lParam) {
 					{
 						// Deactivate task
 						taskLink.activate(&taskLink, task);
+						putstring(FONT_W * 30, FONT_H * 11, COL_FFFFFF, 1, "task3 created, press b");
+					} else {
+						putstring(FONT_W * 30, FONT_H * 11, COL_FFFFFF, 1, "task3 error");
 					}
 				}
 			}
@@ -165,7 +168,7 @@ void task2(void *pParam, void *lParam) {
 		}
 		INTERRUPT(0);
 
-		OSTimeDelay(500);
+		OSTimeDelay(1000);
 	}
 }
 
