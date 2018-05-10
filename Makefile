@@ -33,7 +33,7 @@ image : ${BOOT} ${LOADER} ${IMAGE_DIR}kernel.bin
 # - the compiled C kernel
 ${IMAGE_DIR}kernel.bin : ${ENTRY} ${OBJECT}
 	#ld -Ttext 0x1000 --oformat binary -e main -m elf_i386 -o $@ $^
-	ld -o ${IMAGE_DIR}kernel.elf -s -Ttext 0x9000 -e main -m elf_i386  ${EXTERNAL} $^
+	ld -o ${IMAGE_DIR}kernel.elf -s -Ttext 0x1000 -e main -m elf_i386  ${EXTERNAL} $^
 	objcopy -I elf32-i386 -O binary -R .note -R .comment -S ${IMAGE_DIR}kernel.elf $@
 
 # Generic rule for compiling C code to an object file

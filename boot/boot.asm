@@ -13,7 +13,7 @@ KERNEL_BASE		equ	0x900		; this is the memory base to which we will load our kern
 	mov	fs, ax
 	mov	gs, ax
 	
-	mov	bp, 0x9000				; set the stack
+	mov	bp, 0x7c00				; set the stack
 	mov	sp, bp
 	
 	mov	si, MSG_REAL_MODE		; announce that we are starting

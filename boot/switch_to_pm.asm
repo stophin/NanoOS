@@ -7,7 +7,15 @@ switch_to_pm:
 					
 	lgdt [gdt_descriptor]	; load out global descriptor table, which defines
 							; the protected mode segments (e.g. for code and data)
-							
+
+	;mov ax, 0x2401         ; open the A20
+    ;int 0x15
+    in al, 0x92             ; open port in south bridge
+    or al, 00000010b
+    out 0x92, al            ; open A20
+
+    cli                     ; disable interrupt
+
 	mov	eax, cr0			; to make the switch to protected mode, we set
 	or	eax, 0x1			; the first bit of CR0, a control register
 	mov	cr0, eax
