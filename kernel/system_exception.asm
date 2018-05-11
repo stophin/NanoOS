@@ -101,7 +101,7 @@ copr_error:
 [extern exception_handler]
 exception:
 	call	exception_handler
-	add	esp, 4*2	; Stack Top -> EIP, in order: EIP¡¢CS¡¢EFLAGS
+	add	esp, 4*2	; Stack Top -> EIP, in order: EIP->CS->EFLAGS
 	cli
 	hlt
 	

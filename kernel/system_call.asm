@@ -39,14 +39,14 @@ io_nop:
 	nop
 	ret
 
-; void io_restore_eflags(int)
+; void io_store_eflags(int)
 io_store_eflags:
 	mov	eax, [esp + 0x04]
 	push eax
 	popfd
 	ret
 	
-; void io_load_eflags(void)
+; int io_load_eflags(void)
 io_load_eflags:
 	pushfd
 	pop	eax

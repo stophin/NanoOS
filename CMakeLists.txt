@@ -10,7 +10,21 @@ PROJECT( NanoOS )
 
 
 # set source file name(without path,just file name)
-SET(SOURCE_FILE; ./drivers/key.c
+SET(SOURCE_FILE; ./boot/boot.asm
+./boot/disk_load.asm
+./boot/gdt.asm
+./boot/get_key.asm
+./boot/loader.asm
+./boot/print_string.asm
+./boot/print_string_pm.asm
+./boot/switch_to_pm.asm
+./boot/vga_start.asm
+./boot/vga_start_hd.asm
+./kernel/kernel_entry.asm
+./kernel/system_call.asm
+./kernel/system_exception.asm
+./kernel/system_lib.asm
+./drivers/key.c
 ./drivers/layer.c
 ./drivers/mouse.c
 ./drivers/screen.c
@@ -42,6 +56,7 @@ SET(SOURCE_FILE; ./drivers/key.c
 ./kernel/system_call.h
 ./kernel/system_exception.h
 ./kernel/system_lib.h
+./kernel/low_level.h
 ./lib/fifo.h
 ./lib/lib.h
 ./lib/type.h
@@ -56,9 +71,9 @@ SET(SOURCE_FILE; ./drivers/key.c
 
 # add include files, not itk or vtk.
 INCLUDE_DIRECTORIES( boot
+build
 drivers
 font
-image
 interrupt
 kernel
 lib

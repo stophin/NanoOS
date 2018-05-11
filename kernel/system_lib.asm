@@ -10,7 +10,7 @@ global	disp_str_asm, disp_str_col_asm
 disp_base	dd	0xb8000
 disp_pos	dd 	0xb8000
 [section .text]
-; void disp_str_col_asm(char *)
+; void disp_str_asm(char *)
 disp_str_asm:
 	push ebp
 	mov	ebp, esp

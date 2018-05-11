@@ -4,4 +4,4 @@
 
 extern unsigned int disp_pos;
 
-void divide_error(void);
+extern void trigger_ud2();

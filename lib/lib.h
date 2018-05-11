@@ -2,6 +2,8 @@
 // author: stophin
 //
 #include "../lib/type.h"
+#include "../kernel/low_level.h"
+#include "../kernel/system_call.h"
 
 #ifndef _LIB_
 #define _LIB_

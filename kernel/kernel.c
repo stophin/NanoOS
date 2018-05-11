@@ -1,6 +1,7 @@
 // kernel.c
 // author: stophin
 //
+#include "../kernel/system_exception.h"
 #include "../drivers/screen.h"
 #include "../interrupt/interrupt.h"
 #include "../interrupt/timer.h"
@@ -168,7 +169,7 @@ void task2(void *pParam, void *lParam) {
 		}
 		INTERRUPT(0);
 
-		OSTimeDelay(1000);
+		OSTimeDelay(100);
 	}
 }
 
@@ -319,9 +320,9 @@ void init(void * pParam,void * lParam) {
 	BYTE * code = (BYTE *)memMan.alloc(&memMan, 1000);
 	memforce(code, "12345", 11);
 
-	taskFocus = taskControl.add(&taskControl, task1, NULL,  NULL, TASK_STK_SIZE, 2);
+	taskFocus = taskControl.add(&taskControl, task1, NULL,  NULL, TASK_STK_SIZE, 3);
 
-	taskFocus = taskControl.add(&taskControl, task2, code,  NULL, TASK_STK_SIZE, 3);
+	taskFocus = taskControl.add(&taskControl, task2, code,  NULL, TASK_STK_SIZE, 2);
 
 	
 	int i = 0;
@@ -358,11 +359,11 @@ void main() {
 	
 	// Reserved memory for GUI
 	memman_init(&memman);
-	memman_free(&memman, 0x00400000, 0x0FFFFFFF);
+	memman_free(&memman, 0x01000000, 0x0f000000);
 
 	// Give an available memory address & limit (reserved memory for task) 
 	// and init task control
-	OSInit((char *)0x00100000, 0x0300000);
+	OSInit((char *)0x10000000, 0x01000000);
 
 	// create task and set to current task to run
 	// If no task was created, then kernel will stay in main

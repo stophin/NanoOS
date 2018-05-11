@@ -2,6 +2,7 @@
 // author: stophin
 //
 #include "../res/resource.h"
+#include "../lib/lib.h"
 #include "../kernel/system_call.h"
 #include "../kernel/system_exception.h"
 

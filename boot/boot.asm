@@ -1,11 +1,11 @@
 ; a boot sector that loads a loader and kernel in 32-bit protected mode
 [org  0x7c00]
 LOADER_BASE		equ	0x800		; this is the memory base to which we will load our loader
-								; loader is 512(0x200) ahead of kernel, and do not over 0xFFFF
+								    ; loader is 512(0x200) ahead of kernel, and do not over 0xFFFF
 KERNEL_BASE		equ	0x900		; this is the memory base to which we will load our kernel
-								; (KERNEL_BASE * 16 + OFFSET)
-	mov	[BOOT_DRIVE], dl		; BIOS stores our boot driver in dl, so it's best to remember
-								; this for later
+								    ; (KERNEL_BASE * 16 + OFFSET)
+	mov	[BOOT_DRIVE], dl		    ; BIOS stores our boot driver in dl, so it's best to remember
+								    ; this for later
 	mov	ax, cs
 	mov	ds, ax
 	mov	ss, ax
@@ -24,8 +24,9 @@ KERNEL_BASE		equ	0x900		; this is the memory base to which we will load our kern
 	call load_kernel			; load our kernel
 	
 	call vga_start				; start VGA mode
+	;call vga_start_hd			; start HD-VGA mode
 	
-	call switch_to_pm			;note that we never return from here
+	call switch_to_pm			; note that we never return from here
 	
 	jmp $
 	
@@ -33,7 +34,6 @@ KERNEL_BASE		equ	0x900		; this is the memory base to which we will load our kern
 %include "print_string.asm"
 %include "disk_load.asm"
 %include "gdt.asm"
-%include "print_string_pm.asm"
 %include "switch_to_pm.asm"
 %include "vga_start.asm"
 
@@ -44,25 +44,32 @@ load_loader:
 	call print_string
 	
 	mov	bx, LOADER_BASE<<4		; set up parameters for our disk_load routine, so
-	mov	dh, 1					; that we load the first 1 sectors (excluding 
-	mov	cl, 0x02				; start reading from second sector (i.e.after the boot sector)
-	mov	dl, [BOOT_DRIVE]		; the boot sector) from the boot disk (i.e our
+	mov	dh, 1					; that we load the first 1 sector (excluding
+	mov	cl, 0x02				; start reading from second sector (i.e.after the
+	mov	dl, [BOOT_DRIVE]		; boot sector) from the boot disk (i.e our
 	call disk_load				; loader code) to the right address
 	
 	ret
 
 ; load kernel
 load_kernel:
+; global variables
+BUFFER_ADDR     equ 0x7e0      ; will use 512 bytes of it
+LOAD_CYLINDERS	db	10			; total size = 512 * cycliners * head(2) * 18 (sectors per cylinder)
+LOAD_SECTION	dw	KERNEL_BASE
 
 	mov	si, MSG_LOAD_KERNEL		; print a message to say we are loading the kernel
 	call print_string
 
-
+    ; note that if the sectors are to big,
+    ; which will result in head change,
+    ; will lead to load error.
+    ; so we use a different way
 	;mov	bx, KERNEL_BASE<<4		; set up parameters for our disk_load routine, so
-	;mov	dh, 50					; that we load the first 1 sectors (excluding
-	;mov	cl, 0x03				; start reading from second sector (i.e.after the boot sector)
-	;mov	dl, [BOOT_DRIVE]		; the boot sector) from the boot disk (i.e our
-	;call disk_load				; loader code) to the right address
+	;mov	dh, 50					; that we load a few sectors (excluding
+	;mov	cl, 0x03				; start reading from second sector (i.e.after
+	;mov	dl, [BOOT_DRIVE]		; the loader sector) from the boot disk (i.e our
+	;call disk_load				    ; loader code) to the right address
 
 	mov ax, BUFFER_ADDR
 	mov es, ax
@@ -76,7 +83,7 @@ load_kernel:
 	mov dh, 0 				; DH head
 	mov cl, 2 				; CL sector, kernel starts from the 3rd sector
 
-readFloppy:
+read_floppy:
 	cmp byte [LOAD_CYLINDERS], 0
 	je fin
 
@@ -92,7 +99,7 @@ readFloppy:
 	call print_string
 
 ; copy from buffer to real address
-copySector:
+copy_sector:
 	push si
 	push di
 	push cx
@@ -105,7 +112,7 @@ copySector:
 
 copy:
 	cmp cx, 0
-	je copyEnd
+	je copy_end
 
 	mov al, byte [es:si]; buffer address
 	mov byte [ds:di], al
@@ -115,7 +122,7 @@ copy:
 	dec cx
 	jmp copy
 
-copyEnd:
+copy_end:
 	pop cx
 	pop di
 	pop si
@@ -130,19 +137,20 @@ copyEnd:
 	; end of copy sector
 
 	cmp cl, 18						; every cylinder has 18 sectors
-	jb readFloppy
+	jb read_floppy
 
 	cmp dh, 0
-	je changeHead					; read from head 1 after head 0
+	je change_head					; read from head 1 after head 0
 	mov dh, 0 						; read from head 0
 	inc ch 							; and from the next cylinder
 	mov cl, 0
 	dec byte [LOAD_CYLINDERS]
-	jmp readFloppy
-changeHead:
+	jmp read_floppy
+
+change_head:
 	inc dh 							; read from head 1
 	mov cl, 0
-	jmp readFloppy
+	jmp read_floppy
 
 fin:
 	mov ax, 0
@@ -154,17 +162,11 @@ error:
 	mov byte [DISK_ERROR_MSG], ah
 	mov	si, DISK_ERROR_MSG
 	call print_string
-	jmp $
-BUFFER_ADDR		equ 0x7e0
-; global variables
-LOAD_CYLINDERS	db	10			; total size = 512 * cycliners * head(2) * 18 (sectors per cylinder)
-LOAD_SECTION	dw	KERNEL_BASE
+	jmp $                           ; show the error and never return
 
 [bits 32]
 ; this is where we arrive after switching to and initialising protected mode.
 BEGIN_PM:
-	mov	ebx, MSG_PORT_MODE
-	call print_string_pm		; use out 32-bit print routine.
 	
 	call LOADER_BASE<<4			; now jump to the address of our loaded
 								; loader code, assume the brace position, 
@@ -177,7 +179,6 @@ BOOT_DRIVE		db	0
 MSG_LOAD_LOADER	db	"Loading loader", 0
 MSG_LOAD_KERNEL	db	"Loading kernel", 0
 MSG_REAL_MODE	db	"Real Mode", 0
-MSG_PORT_MODE	db	"Protected Mode", 0
 MSG_DOT			db 	"."
 
 ; bootsector padding

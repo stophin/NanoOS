@@ -1,3 +1,3 @@
 // font.c
 // author stophin
-#include "../res/font.h"
+#include "../font/font.h"

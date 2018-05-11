@@ -1,4 +1,5 @@
 #include "../memory/memory.h"
+#include "../kernel/system_call.h"
 
 MEMMAN memman;
 

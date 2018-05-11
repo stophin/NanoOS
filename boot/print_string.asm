@@ -1,8 +1,6 @@
-;=================================
 ;print_string(char *addr)
 ;in: si(addr)
 ;pt: null
-;=================================
 print_string:
 	push	si
 	push	ax
@@ -19,4 +17,3 @@ print_string:
 	pop	ax
 	pop	si
 	ret
-;=================================
