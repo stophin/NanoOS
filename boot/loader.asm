@@ -7,7 +7,7 @@ LOAD_CYLINDERS	equ	10
 KERNEL_SIZE		equ 512 * LOAD_CYLINDERS * 2 * 18
 
 LOADER_OFFSET equ 0x8000
-LOADER_REAL   equ 0x40000
+LOADER_REAL   equ 0x90000
 LOADER_SIZE   equ 512
 [bits 32]
 ; this is where we arrive after switching to and initialising protected mode.

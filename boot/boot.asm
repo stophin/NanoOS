@@ -59,7 +59,7 @@ load_kernel:
 
 
 	;mov	bx, KERNEL_BASE<<4		; set up parameters for our disk_load routine, so
-	;mov	dh, 50					; that we load the first 1 sectors (excluding 
+	;mov	dh, 50					; that we load the first 1 sectors (excluding
 	;mov	cl, 0x03				; start reading from second sector (i.e.after the boot sector)
 	;mov	dl, [BOOT_DRIVE]		; the boot sector) from the boot disk (i.e our
 	;call disk_load				; loader code) to the right address
@@ -123,7 +123,7 @@ copyEnd:
 	mov bx, ds
 	add bx, 0x20 					; add address base by 0x200 / 16
 	mov ax, 0
-	mov ds, ax				
+	mov ds, ax
 	mov word [LOAD_SECTION], bx		; save address base
 	mov bx, 0
 
@@ -154,7 +154,7 @@ error:
 	mov byte [DISK_ERROR_MSG], ah
 	mov	si, DISK_ERROR_MSG
 	call print_string
-	jmp $	
+	jmp $
 BUFFER_ADDR		equ 0x7e0
 ; global variables
 LOAD_CYLINDERS	db	10			; total size = 512 * cycliners * head(2) * 18 (sectors per cylinder)
