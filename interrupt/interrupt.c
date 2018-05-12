@@ -53,7 +53,7 @@ void init_gdtidt() {
 
 	// code segment has the same base as that in boot.asm
 	// and expands at an available space limit
-	set_segmdesc(gdt + 1, 0xffffffff, 0x00000000, 0x409a);//9a readable/executable code 
+	set_segmdesc(gdt + 1, 0xffffffff, 0x00000000, 0x409a);//9a readable/executable code
 	// data segment including all the 4G area
 	set_segmdesc(gdt + 2, 0xffffffff, 0x00000000, 0x4092);//92 readable/writable data
 	// limit: 0xffff = 8192 * 8 - 1

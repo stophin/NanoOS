@@ -347,7 +347,7 @@ USTACK *OSTaskStackInit(void TASK_FN, void *pdata, void *ldata, USTACK *ptos)
 {
 	UREG *stk;//console 32-bit
 	stk = (UREG *)ptos; /* Load stack pointer */
-	//*--stk = (UREG)task; /* Put pointer to task on top of stack */
+	*--stk = (UREG)task; /* Put pointer to task on top of stack */
 	//set values for registers in stack
 	//a tack will never return 
 	//so set them as you wish or remove them both will be OK
