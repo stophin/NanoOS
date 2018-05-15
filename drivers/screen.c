@@ -102,7 +102,6 @@ void putfont(INT x, INT y, BYTE c, BYTE scl, BYTE *font)
 }
 
 void putstring(INT x, INT y, BYTE c, BYTE scl, BYTE * str) {
-	//disp_str(str);
 	INT i = 0;
 	for (i = 0; str[i] != '\0'; i ++) {
 		putfont(x + FONT_W * scl * i, y, c, scl, sys_font + str[i] * FONT_H);
@@ -196,7 +195,7 @@ void putstring_b(BYTE * buf, INT width, INT x, INT y, BYTE c, BYTE scl, BYTE * s
 	}
 }
 
-void draw_cursor_b(BYTE * buf, INT width, INT px, INT py, BYTE bc, BYTE dc) {
+void draw_cursor_b(BYTE * buf, INT width, INT px, INT py, BYTE bc, BYTE dc, BYTE tc) {
 	INT x, y;
 	for (y = 0; y < 16; y++) {
 		for (x = 0; x < 10; x++) {
@@ -207,6 +206,7 @@ void draw_cursor_b(BYTE * buf, INT width, INT px, INT py, BYTE bc, BYTE dc) {
 				buf[(py + y) * width  + px + x] = dc;
 			}
 			else {
+                buf[(py + y) * width  + px + x] = tc;
 			}
 		}
 	}

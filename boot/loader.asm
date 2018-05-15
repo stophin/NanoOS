@@ -8,7 +8,7 @@ KERNEL_SIZE     equ 512 * LOAD_CYLINDERS * 2 * 18
 
 LOADER_OFFSET equ 0x8000    ; this is the memory offset to which we have loaded our loader
 LOADER_REAL   equ 0x90000   ; this is the memory address to which we will load out load
-LOADER_SIZE   equ 512       ; loader size = 512
+LOADER_SIZE   equ 512       ; loader size
 [bits 32]
 ; this is where we arrive after switching to and initialising protected mode.
 BEGIN_LOADER:
@@ -34,6 +34,8 @@ copy_loader_end:
     ; jmp to the new loader to continue
     jmp LOADER_REAL + LOADER_RESUME - LOADER_OFFSET
 
+    ; loader resume in new address
+    ; and loads the kernel to specified place
 LOADER_RESUME:
 	mov ecx, KERNEL_SIZE
 	mov esi, KERNEL_OFFSET

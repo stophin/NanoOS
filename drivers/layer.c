@@ -88,7 +88,8 @@ void layer_height(LAYER_CTL * ctl, LAYER * lay, INT height) {
 			}
 			ctl->layers[height] = lay;
 			//layer_refresh(ctl);	// refresh layers
-			layer_refresh_region(ctl, lay->vx0, lay->vy0, lay->vx0 + lay->bxsize, lay->vy0 + lay->bysize, height + 1, -1);
+			layer_refresh_map(ctl, lay->vx0, lay->vy0, lay->vx0 + lay->bxsize, lay->vy0 + lay->bysize, height + 1);
+			layer_refresh_region(ctl, lay->vx0, lay->vy0, lay->vx0 + lay->bxsize, lay->vy0 + lay->bysize, height + 1, old);
 		} else {	// hide
 			if (ctl->top > old) {
 				// move down the layers at top
@@ -97,9 +98,10 @@ void layer_height(LAYER_CTL * ctl, LAYER * lay, INT height) {
 					ctl->layers[h]->height = h;
 				}
 			}
-			ctl->top --;	// hidden, layer - 1
+			ctl->top --;	// hidden, top layer - 1
 			//layer_refresh(ctl);	// refresh layers
-			layer_refresh_region(ctl, lay->vx0, lay->vy0, lay->vx0 + lay->bxsize, lay->vy0 + lay->bysize, 0, -1);
+            layer_refresh_map(ctl, lay->vx0, lay->vy0, lay->vx0 + lay->bxsize, lay->vy0 + lay->bysize, 0);
+			layer_refresh_region(ctl, lay->vx0, lay->vy0, lay->vx0 + lay->bxsize, lay->vy0 + lay->bysize, 0, old -1);
 		}
 	} else if (old < height) {	// higher than before
 		if (old >= 0) {
@@ -116,18 +118,19 @@ void layer_height(LAYER_CTL * ctl, LAYER * lay, INT height) {
 				ctl->layers[h + 1]->height = h + 1;
 			}
 			ctl->layers[height] = lay;
-			ctl->top ++;	// show, layer + 1
+			ctl->top ++;	// show, top layer + 1
 		}
 		//layer_refresh(ctl);	// refresh layers
-		sprintf(100, 100, COL_848484, COL_FFFFFF, 1, "Here");
-		layer_refresh_region(ctl, lay->vx0, lay->vy0, lay->vx0 + lay->bxsize, lay->vy0 + lay->bysize, height, -1);
+		//sprintf(100, 100, COL_848484, COL_FFFFFF, 1, "Here");
+        layer_refresh_map(ctl, lay->vx0, lay->vy0, lay->vx0 + lay->bxsize, lay->vy0 + lay->bysize, height);
+		layer_refresh_region(ctl, lay->vx0, lay->vy0, lay->vx0 + lay->bxsize, lay->vy0 + lay->bysize, height, height);//redraw this layer
 	}
 	return;
 }
 
 void layer_refresh(LAYER_CTL * ctl, LAYER * lay, INT bx0, INT by0, INT bx1, INT by1) {	
 	if (lay->height >= 0) {		// is shown
-		layer_refresh_region(ctl, lay->vx0 + bx0, lay->vy0 + by0, lay->vx0 + bx1, lay->vy0 + by1, lay->height, lay->height);
+		layer_refresh_region(ctl, lay->vx0 + bx0, lay->vy0 + by0, lay->vx0 + bx1, lay->vy0 + by1, lay->height, -1);
 	}
 	return;
 }
@@ -174,8 +177,7 @@ void layer_refresh_map(LAYER_CTL * ctl, INT vx0, INT vy0, INT vx1, INT vy1, INT 
 			vy = lay->vy0 + by;
 			for (bx = bx0; bx < bx1; bx ++) {
 				vx = lay->vx0 + bx;
-				if (buf[by * lay->bxsize + bx] != lay->col_inv) {
-				//if (1) {
+                if (buf[by * lay->bxsize + bx] != lay->col_inv) {
 					map[vy * ctl->xsize + vx] = sid;
 				}
 			}
@@ -187,6 +189,7 @@ void layer_refresh_map(LAYER_CTL * ctl, INT vx0, INT vy0, INT vx1, INT vy1, INT 
 
 void layer_refresh_region(LAYER_CTL * ctl, INT vx0, INT vy0, INT vx1, INT vy1, INT height, INT top) {
 	INT h, bx, by, vx, vy, bx0, by0, bx1, by1;
+
 	BYTE * buf, c, * vram = ctl->vram, * map = ctl->map, sid;
 	LAYER * lay;
 	// out of screen
@@ -230,12 +233,12 @@ void layer_refresh_region(LAYER_CTL * ctl, INT vx0, INT vy0, INT vx1, INT vy1, I
 			vy = lay->vy0 + by;
 			for (bx = bx0; bx < bx1; bx ++) {
 				vx = lay->vx0 + bx;
-				if (map[vy * ctl->xsize + vx] == sid) {
-				//if (1) {
-					vram[vy * ctl->xsize + vx] = buf[by * lay->bxsize + bx];
-					//vram[vy * ctl->xsize + vx] = map[vy * ctl->xsize + vx];
+                 if (map[vy * ctl->xsize + vx] >= sid) {
+                    if (buf[by * lay->bxsize + bx] != lay->col_inv) {
+                        vram[vy * ctl->xsize + vx] = buf[by * lay->bxsize + bx];
+                        //vram[vy * ctl->xsize + vx] = map[vy * ctl->xsize + vx];
+                    }
 				} else {
-					
 					//vram[vy * ctl->xsize + vx] = COL_848484;
 				}
 			}
@@ -259,9 +262,9 @@ void layer_slide(LAYER_CTL * ctl, LAYER * lay, INT vx0, INT vy0) {
 	if (lay->height >= 0) {	// if it is shown
 		//layer_refresh(ctl);	// refresh layers
 		layer_refresh_map(ctl, old_vx0, old_vy0, old_vx0 + lay->bxsize, old_vy0 + lay->bysize, 0);
-		layer_refresh_map(ctl, vx0, vy0, vx0 + lay->bxsize, vy0 + lay->bysize, lay->height);
-		layer_refresh_region(ctl, old_vx0, old_vy0, old_vx0 + lay->bxsize, old_vy0 + lay->bysize, 0, lay->height - 1);
-		layer_refresh_region(ctl, vx0, vy0, vx0 + lay->bxsize, vy0 + lay->bysize, lay->height, lay->height);
+        layer_refresh_region(ctl, old_vx0, old_vy0, old_vx0 + lay->bxsize, old_vy0 + lay->bysize, 0, -1);
+		layer_refresh_map(ctl, vx0, vy0, vx0 + lay->bxsize, vy0 + lay->bysize, 0);
+		layer_refresh_region(ctl, vx0, vy0, vx0 + lay->bxsize, vy0 + lay->bysize, lay->height, -1);
 	}
 	return;
 }
@@ -272,8 +275,8 @@ void layer_string(LAYER_CTL * ctl, LAYER * lay, INT x, INT y, BYTE c, BYTE b, BY
 		boxfill_b(lay->buf, lay->bxsize, b, x + FONT_W * scl * i, y, x + FONT_W * scl * (i + 1), y + FONT_H * scl);
 		putfont_b(lay->buf, lay->bxsize, x + FONT_W * scl * i, y, c, scl, sys_font + str[i] * FONT_H);
 	}
-	layer_refresh_map(ctl, lay->vx0 + x , lay->vy0 + y, lay->vx0 + x + FONT_W * scl * i, lay->vy0 + y + FONT_H * scl, lay->height);
-	layer_refresh_region(ctl, lay->vx0 + x , lay->vy0 + y, lay->vx0 + x + FONT_W * scl * i, lay->vy0 + y + FONT_H * scl, lay->height, lay->height);
+	layer_refresh_map(ctl, lay->vx0 + x , lay->vy0 + y, lay->vx0 + x + FONT_W * scl * i, lay->vy0 + y + FONT_H * scl, 0);
+	layer_refresh_region(ctl, lay->vx0 + x , lay->vy0 + y, lay->vx0 + x + FONT_W * scl * i, lay->vy0 + y + FONT_H * scl, lay->height, -1);
 }
 
 BYTE isin(LAYER * tag, LAYER * itm) {

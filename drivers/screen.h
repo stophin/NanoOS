@@ -53,6 +53,6 @@ void draw_cursor(INT px, INT py, BYTE bc, BYTE dc);
 void boxfill_b(BYTE * buf, INT width, BYTE c, INT x0, INT y0, INT x1, INT y1);
 void putfont_b(BYTE * buf, INT width, INT x, INT y, BYTE c, BYTE scl, BYTE *font);
 void putstring_b(BYTE * buf, INT width, INT x, INT y, BYTE c, BYTE scl, BYTE * str);
-void draw_cursor_b(BYTE * buf, INT width, INT px, INT py, BYTE bc, BYTE dc);
+void draw_cursor_b(BYTE * buf, INT width, INT px, INT py, BYTE bc, BYTE dc, BYTE tc);
 void sprintf(INT x, INT y, BYTE c, BYTE b, BYTE scl, BYTE * str);
 #endif

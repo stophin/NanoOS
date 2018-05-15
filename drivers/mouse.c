@@ -25,7 +25,6 @@ void int_handler2c() {
 	putstring(10, FONT_H * 1, COL_000000, 1, "Mouse");
 	
 	if (decode_mouse(data) == 1) {
-		/*
 		itoa(buffer, mouse.x, 10);
 		itoa(buffer + 15, mouse.y, 10);
 		strcat(buffer, ",");
@@ -35,10 +34,8 @@ void int_handler2c() {
 		putstring(FONT_W * 10, FONT_H * 1, COL_000000, 1, buffer);
 		
 		draw_cursor(mouse.x, mouse.y, COL_000000, COL_FFFFFF);
-		*/
-
 	}
-	taskCur->MOUSE ++;
+    taskFocus->MOUSE ++;
 	
 	return;
 }

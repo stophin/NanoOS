@@ -26,8 +26,8 @@ void int_handler21() {
 	
 	boxfill(COL_FFFFFF, FONT_W * 10, FONT_H * 0, FONT_W * 11, FONT_H * 1);
 	putfont(FONT_W * 10, FONT_H * 0, COL_000000, 1, sys_font + data * FONT_H);
-	
-	taskCur->key.put(&taskCur->key, data);
+
+	taskFocus->key.put(&taskFocus->key, data);
 	
 	return;
 }

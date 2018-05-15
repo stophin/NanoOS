@@ -3,6 +3,7 @@
 //
 #include "../lib/lib.h"
 #include "../res/resource.h"
+#include "../kernel/system_lib.h"
 
 /**
  * C++ version 0.4 BYTE* style "itoa":
@@ -99,19 +100,11 @@ void disp_cur() {
 #include "../drivers/screen.h"
 
 void disp_str(BYTE * str) {
-/*
-	disp_str_asm(str);
-	disp_cur();
-*/
 	//boxfill(COL_FFFFFF, FONT_W * (disp_pos - disp_base), FONT_H * 5, FONT_W * (disp_pos - disp_base + 5), FONT_H * 6);
 	putstring(FONT_W * 0, FONT_H * (disp_pos - disp_base), COL_000000, 1, str);
 	disp_pos+= 1;
 }
 void disp_str_col(BYTE * str, BYTE col) {
-/*
-	disp_str_col_asm(str, col);
-	disp_cur();
-*/
 	//boxfill(COL_FFFFFF, FONT_W * (disp_pos - disp_base), FONT_H * 6, FONT_W * (disp_pos - disp_base +5), FONT_H * 7);
 	putstring(FONT_W * 0, FONT_H * (disp_pos - disp_base), COL_840000, 1, str);
 	disp_pos+= 1;

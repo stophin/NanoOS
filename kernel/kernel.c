@@ -15,6 +15,8 @@
 #define INTERRUPT(mode) //(mode? (DISABLE_INTERRUPT()):(ENABLE_INTERRUPT()))
 
 LAYER_CTL * layer_ctl;
+LAYER * layer_back, * layer_mouse, * layer_win;
+BYTE * buf_back, * buf_mouse, * buf_win;
 
 void Initialize() {
 	int i = 0;
@@ -50,134 +52,32 @@ void Initialize() {
 	putstring(0, FONT_H * i ++, COL_FFFFFF, 1, "All ok!");
 }
 
-void task3(void *pParam, void *lParam) {
+void taskEXE(void *pParam, void *lParam) {
+    int i = 0;
 	char c;
 
-	INTERRUPT(1);
-	//parameter address
-	itoa(buffer, (int)pParam, 16);
-	putstring(FONT_W * 10, FONT_H * 12, COL_000000, 1, buffer);
+	LAYER * layer_exe = (LAYER*)lParam;
 
-	//parameter value
-	memcpy(buffer, pParam);
-	//boxfill(COL_FFFFFF, FONT_W * (20 + *(i
-	putstring(FONT_W * 20, FONT_H * 12, COL_000000, 1, buffer);
-	INTERRUPT(0);
-	INTERRUPT(1);
-	//parameter value
-	itoa(buffer, ((int)lParam) % 16, 16);//nt *)lParam), FONT_H * 13, FONT_W * 30, FONT_H * 14);
-	putstring(FONT_W * (0 + (int)lParam), FONT_H * 13, COL_000000, 1, buffer);
+    //call parameter as code
+    itoa(buffer, ((int (*)())pParam)(), 10);
+    layer_string(layer_ctl, layer_exe, FONT_W, FONT_H, COL_848484, COL_FFFFFF, 1, buffer);
 
-	INTERRUPT(0);
-	INTERRUPT(1);
-	//parameter address
-	itoa(buffer, (int)taskCur->OSStackTop, 16);
-	boxfill(COL_FFFFFF, FONT_W * 10, FONT_H * 14, FONT_W * 25, FONT_H * 15);
-	putstring(FONT_W * 10, FONT_H * 14, COL_000000, 1, buffer);
+    itoa(buffer, layer_exe->height, 10);
+    layer_string(layer_ctl, layer_exe, FONT_W, FONT_H * 2, COL_848484, COL_FFFFFF, 1, buffer);
 
-	INTERRUPT(0);
+    memMan.free(&memMan, (MEM_ADDR)pParam);
 
-	//call parameter as code
-	itoa(buffer, ((int (*)())pParam)(), 16);
-	putstring(FONT_W * 45, FONT_H * 12, COL_000000, 1, buffer);
-	int i = 0;
-	putstring(FONT_W * i ++, FONT_H * 12, COL_FFFFFF, 1, "in taks3");
+    memman_free_4k(&memman, (DWORD)layer_exe->buf, layer_exe->bxsize * layer_exe->bysize);
+    layer_free(layer_ctl, layer_exe);
 
 	for (;;) {
-		//io_cli();
-
-		INTERRUPT(1);
-		itoa(buffer, taskCur->runtime, 10);
-		boxfill(COL_FFFFFF, FONT_W * 30, FONT_H * 12, FONT_W * 40, FONT_H * 13);
-		putstring(FONT_W * 30, FONT_H * 12, COL_000000, 1, buffer);
-
-		if (taskCur->key.linkcount > 0) {
-			c = taskCur->key.pop(&taskCur->key);
-			//io_sti();
-			if (c) {
-				putfont(FONT_W * i ++, FONT_H * 11, COL_000000, 1, sys_font + c * FONT_H);
-			}
-		} else {
-			//io_stihlt();
-		}
-
-		INTERRUPT(1);
-		taskControl.remove(&taskControl, taskCur);
-		INTERRUPT(0);
-		OSTimeDelay(100);
-		// Task can be removed and recovered by other task code
-		// and switch to other task
-		// but can never return!!!
-	}
-}
-
-void task2(void *pParam, void *lParam) {
-	char c;
-
-	INTERRUPT(1);
-	//parameter address
-	itoa(buffer, (int)pParam, 16);
-	putstring(FONT_W * 10, FONT_H * 11, COL_000000, 1, buffer);
-
-	//parameter value
-	memcpy(buffer, pParam);
-	putstring(FONT_W * 20, FONT_H * 11, COL_000000, 1, buffer);
-
-	memMan.free(&memMan, (MEM_ADDR)pParam);
-	INTERRUPT(0);
-
-	BYTE * code = (BYTE *)memMan.alloc(&memMan, 1000);
-	// int code() { return 0xa;}
-	memforce(code, "\x55\x89\xE5\xB8\x0A\x00\x00\x00\x5D\xC3\x00", 11);
-
-	int i = 0;
-	putstring(FONT_W * i ++, FONT_H * 11, COL_FFFFFF, 1, "in taks2");
-	OSTask * task;
-	int count = 0;
-	for (;;) {
-		//io_cli();
-
-		INTERRUPT(1);
-		itoa(buffer, taskCur->runtime, 10);
-		boxfill(COL_FFFFFF, FONT_W * 30, FONT_H * 11, FONT_W * 40, FONT_H * 12);
-		putstring(FONT_W * 30, FONT_H * 11, COL_000000, 1, buffer);
-
-		if (taskCur->key.linkcount > 0) {
-			c = taskCur->key.pop(&taskCur->key);
-			//io_sti();
-			if (c) {
-				putfont(FONT_W * i ++, FONT_H * 11, COL_000000, 1, sys_font + c * FONT_H);
-				if (c == '2') {
-					putstring(FONT_W * 25, FONT_H * 11, COL_000000, 1, "U2");
-					trigger_ud2();
-				}
-				if (c == 'c') {
-					task = taskControl.create(&taskControl, task3, code, (void *)count, TASK_STK_SIZE, 4);
-					count ++;
-					if (task) 
-					{
-						// Deactivate task
-						taskLink.activate(&taskLink, task);
-						putstring(FONT_W * 30, FONT_H * 11, COL_FFFFFF, 1, "task3 created, press b");
-					} else {
-						putstring(FONT_W * 30, FONT_H * 11, COL_FFFFFF, 1, "task3 error");
-					}
-				}
-			}
-		} else {
-			//io_stihlt();
-		}
-		INTERRUPT(0);
-
-		OSTimeDelay(100);
+        OSTimeDelay(100);
 	}
 }
 
 
-void task1(void *pParam, void *lParam) {
+void taskGUI(void *pParam, void *lParam) {
 	char c;
-	LAYER * layer_back, * layer_mouse, * layer_win;
-	BYTE * buf_back, * buf_mouse, * buf_win;
 
 	int i = 0;
 	INT mem_size = mem_test(0x00400000, 0xbfffffff);
@@ -196,16 +96,16 @@ void task1(void *pParam, void *lParam) {
 
 	// set layer
 	layer_set(layer_back, buf_back, bootinfo.scrnx, bootinfo.scrny, 0);
-	layer_set(layer_mouse, buf_mouse, 11, 17, 0);
+	layer_set(layer_mouse, buf_mouse, 11, 17, COL_000000);
 	layer_set(layer_win, buf_win, 160, 80, 0);
 
 	draw_back(layer_back);
 	draw_window(layer_win);
-	draw_cursor_b(buf_mouse, layer_mouse->bxsize, 0 , 0, COL_840000, COL_FFFFFF);
+	draw_cursor_b(buf_mouse, layer_mouse->bxsize, 0 , 0, COL_840000, COL_FFFFFF, COL_000000);
 
 	// set depth height
 	layer_height(layer_ctl, layer_back, 0);
-	layer_height(layer_ctl, layer_mouse, 2);
+	layer_height(layer_ctl, layer_mouse, 100);
 	layer_height(layer_ctl, layer_win, 1);
 
 	// set position
@@ -226,87 +126,23 @@ void task1(void *pParam, void *lParam) {
 	strcat(buffer, " KB");
 	layer_string(layer_ctl, layer_back, 0, i ++ * FONT_H, COL_848484, COL_FFFFFF, 1, buffer);
 
-	memcpy(buffer, "buf_back : ");
-	itoa_b((INT)buf_back, buffer + 30, 16);
-	strcat(buffer, buffer + 30);
-	layer_string(layer_ctl, layer_back, 0, i ++ * FONT_H, COL_848484, COL_FFFFFF, 1, buffer);
-	memcpy(buffer, "buf_mouse: ");
-	itoa_b((INT)buf_mouse, buffer + 30, 16);
-	strcat(buffer, buffer + 30);
-	layer_string(layer_ctl, layer_back, 0, i ++ * FONT_H, COL_848484, COL_FFFFFF, 1, buffer);
-	memcpy(buffer, "buf_win  : ");
-	itoa_b((INT)buf_win, buffer + 30, 16);
-	strcat(buffer, buffer + 30);
-	layer_string(layer_ctl, layer_back, 0, i ++ * FONT_H, COL_848484, COL_FFFFFF, 1, buffer);
+    memcpy(buffer, "buf_back : ");
+    itoa_b((INT)buf_back, buffer + 30, 16);
+    strcat(buffer, buffer + 30);
+    layer_string(layer_ctl, layer_back, 0, i ++ * FONT_H, COL_848484, COL_FFFFFF, 1, buffer);
+    memcpy(buffer, "buf_mouse: ");
+    itoa_b((INT)buf_mouse, buffer + 30, 16);
+    strcat(buffer, buffer + 30);
+    layer_string(layer_ctl, layer_back, 0, i ++ * FONT_H, COL_848484, COL_FFFFFF, 1, buffer);
+    memcpy(buffer, "buf_win  : ");
+    itoa_b((INT)buf_win, buffer + 30, 16);
+    strcat(buffer, buffer + 30);
+    layer_string(layer_ctl, layer_back, 0, i ++ * FONT_H, COL_848484, COL_FFFFFF, 1, buffer);
 
-	i = 0;
-	putstring(FONT_W * i ++, FONT_H * 10, COL_FFFFFF, 1, "in taks1");
-	int counter = 0;
+    i = 0;
 	for (;;) {
-		//io_cli();
 		itoa_b(timer_ctl.totalCount, buffer, 10);
 		layer_string(layer_ctl, layer_win, 10, 2 * FONT_H, COL_848484, COL_FFFFFF, 2, buffer);
-
-		INTERRUPT(1);
-		itoa(buffer, taskCur->runtime, 10);
-		boxfill(COL_FFFFFF, FONT_W * 30, FONT_H * 10, FONT_W * 40, FONT_H * 11);
-		putstring(FONT_W * 30, FONT_H * 10, COL_000000, 1, buffer);
-
-		if (taskCur->MOUSE > 0) {
-			taskCur->MOUSE --;
-
-			if (mouse.x <= 0) {
-				mouse.vx = 0;
-			}
-			if (mouse.y <= 0) {
-				mouse.vy = 0;
-			}
-			if (mouse.x > bootinfo.scrnx - 1) {
-				mouse.x = bootinfo.scrnx - 1;
-				mouse.vx = 0;
-			}
-			if (mouse.y > bootinfo.scrny - 1) {
-				mouse.y = bootinfo.scrny - 1;
-				mouse.vy = 0;
-			}
-			if ((mouse.button & 0x01) != 0) {
-				if (isin(layer_win, layer_mouse) == 1) {
-					if (mouse.state == 0) {
-						layer_win->mx0 = mouse.x - layer_win->vx0;
-						layer_win->my0 = mouse.y - layer_win->vy0;
-					}
-					mouse.state = 1;
-				}
-			} else {
-				mouse.state = 0;
-			}
-			if ((mouse.button & 0x02) != 0) {
-			}
-			if ((mouse.button & 0x04) != 0) {
-			}
-			DISABLE_INTERRUPT();
-			//layer_slide(layer_ctl, layer_mouse, layer_mouse->vx0 + mouse.vx, layer_mouse->vy0 + mouse.vy);
-			layer_slide(layer_ctl, layer_mouse, mouse.x, mouse.y);
-			if (mouse.state == 1) {
-				//layer_slide(layer_ctl, layer_win, layer_win->vx0 + mouse.vx, layer_win->vy0 + mouse.vy);
-				//layer_slide(layer_ctl, layer_win, mouse.x, mouse.y);
-				layer_slide(layer_ctl, layer_win, mouse.x - layer_win->mx0, mouse.y - layer_win->my0);
-			}
-			ENABLE_INTERRUPT();
-		}
-		if (taskCur->key.linkcount > 0) {
-			c = taskCur->key.pop(&taskCur->key);
-			//io_sti();
-			if (c) {
-				putfont(FONT_W * i ++, FONT_H * 10, COL_000000, 1, sys_font + c * FONT_H);
-				buffer[0] = c;
-				buffer[1] = '\0';
-				layer_string(layer_ctl, layer_win, 10, FONT_H * 4, COL_848484, COL_FFFFFF, 2, buffer);
-			}
-		} else {
-			//io_stihlt();
-		}
-		INTERRUPT(0);
 
 		OSTimeDelay(100);
 	}
@@ -316,44 +152,89 @@ void task1(void *pParam, void *lParam) {
 
 void init(void * pParam,void * lParam) {
 	char c;
+    int i = 0;
 
-	BYTE * code = (BYTE *)memMan.alloc(&memMan, 1000);
-	memforce(code, "12345", 11);
+	taskControl.add(&taskControl, taskGUI, NULL,  NULL, TASK_STK_SIZE, 2);
 
-	taskFocus = taskControl.add(&taskControl, task1, NULL,  NULL, TASK_STK_SIZE, 3);
-
-	taskFocus = taskControl.add(&taskControl, task2, code,  NULL, TASK_STK_SIZE, 2);
-
-	
-	int i = 0;
-
-	int counter = 0;
-	putstring(FONT_W * i ++, FONT_H * 9, COL_FFFFFF, 1, "in task init");
+    OSTask * task = NULL;
+    int count = 0;
 	for (;;) {
-		//io_cli();
+        if (taskCur->MOUSE > 0) {
+            taskCur->MOUSE --;
 
-		INTERRUPT(1);
-		itoa(buffer, taskCur->runtime, 10);
-		boxfill(COL_FFFFFF, FONT_W * 30, FONT_H * 9, FONT_W * 40, FONT_H * 10);
-		putstring(FONT_W * 30, FONT_H * 9, COL_000000, 1, buffer);
+            if ((mouse.button & 0x01) != 0) {
+                if (isin(layer_win, layer_mouse) == 1) {
+                    if (mouse.state == 0) {
+                        layer_win->mx0 = mouse.x - layer_win->vx0;
+                        layer_win->my0 = mouse.y - layer_win->vy0;
+                    }
+                    mouse.state = 1;
+                }
+            } else {
+                mouse.state = 0;
+            }
+            if ((mouse.button & 0x02) != 0) {
+            }
+            if ((mouse.button & 0x04) != 0) {
+            }
+            DISABLE_INTERRUPT();
+            //layer_slide(layer_ctl, layer_mouse, layer_mouse->vx0 + mouse.vx, layer_mouse->vy0 + mouse.vy);
+            layer_slide(layer_ctl, layer_mouse, mouse.x, mouse.y);
+            if (mouse.state == 1) {
+                //layer_slide(layer_ctl, layer_win, layer_win->vx0 + mouse.vx, layer_win->vy0 + mouse.vy);
+                //layer_slide(layer_ctl, layer_win, mouse.x, mouse.y);
+                 layer_slide(layer_ctl, layer_win, mouse.x - layer_win->mx0, mouse.y - layer_win->my0);
+            }
+            ENABLE_INTERRUPT();
+        }
+        if (taskCur->key.linkcount > 0) {
+            c = taskCur->key.pop(&taskCur->key);
+            if (c) {
+                putfont(FONT_W * i ++, FONT_H * 9, COL_000000, 1, sys_font + c * FONT_H);
 
-		if (taskCur->key.linkcount > 0) {
-			c = taskCur->key.pop(&taskCur->key);
-			//io_sti();
-			if (c) {
-				putfont(FONT_W * i ++, FONT_H * 9, COL_000000, 1, sys_font + c * FONT_H);
-			}
-		} else {
-			//io_stihlt();
-		}
-		INTERRUPT(0);
+                if (c == 'a') {
+                    // Activate all tasks
+                    taskLink.activate(&taskLink, NULL);
+                }
+                if (c == 'c' || c == 'b') {
+                    BYTE * code = (BYTE *)memMan.alloc(&memMan, 1000);
+                    // int code() { return 0xa;}
+                    memforce(code, "\x55\x89\xE5\xB8\x0A\x00\x00\x00\x5D\xC3\x00", 11);
 
-		OSTimeDelay(200);
+                    // create layer
+                    LAYER * layer_exe = layer_alloc(layer_ctl);
+                    BYTE * buf_exe = (BYTE *) memman_alloc_4k(&memman, 100 * 100);
+                    // set layer
+                    layer_set(layer_exe, buf_exe, 100, 100, 0);
+                    // draw window
+                    draw_window(layer_exe);
+                    // set depth height
+                    layer_height(layer_ctl, layer_exe, count + 3);
+                    // set position
+                    layer_slide(layer_ctl, layer_exe, count * 2, count * 2);
+
+                    task = taskControl.create(&taskControl, taskEXE, (void *)code, (void *)layer_exe, TASK_STK_SIZE, 2);
+                    count ++;
+                    if (task) {
+                        if (c == 'b') {
+                            // Deactivate task immediately
+                            taskLink.deactivate(&taskLink, task);
+                        } else {
+                            // Activate task
+                            taskLink.activate(&taskLink, task);
+                        }
+                    }
+                }
+            }
+        }
+
+        OSTimeDelay(200);
 	}
 }
 
 void main() {
 	INT i;
+    BYTE c;
 
 	Initialize();
 	
@@ -368,40 +249,21 @@ void main() {
 	// create task and set to current task to run
 	// If no task was created, then kernel will stay in main
 	taskCur = taskControl.add(&taskControl, init, NULL,  NULL, TASK_STK_SIZE, 1);
-	
-	// Start task control
+    taskFocus = taskCur;
+
+    // Start task control
 	// make sure current task has been set
 	OSStartHighReady();
-	
-	BYTE c;
-	i = 0;
-	putstring(FONT_W * i ++, FONT_H * 8, COL_FFFFFF, 1, "Init main");
-	int counter = 0;
-	OSTask * task, * _task;
+
+	int count = 0;
 	while(1) {
-		//io_cli();
-
-		INTERRUPT(1);
-		itoa(buffer, taskCur->runtime, 10);
-		boxfill(COL_FFFFFF, FONT_W * 30, FONT_H * 8, FONT_W * 40, FONT_H * 9);
-		putstring(FONT_W * 30, FONT_H * 8, COL_000000, 1, buffer);
-		
-		if (taskCur->key.linkcount > 0) {
-			c = taskCur->key.pop(&taskCur->key);
-			//io_sti();
-			if (c) {
-				putfont(FONT_W * i ++, FONT_H * 8, COL_000000, 1, sys_font + c * FONT_H);
-				if (c == 'b') {
-					// Activate all tasks
-					taskLink.activate(&taskLink, NULL);
-				}
-			}
-		} else {
-			//io_stihlt();
-		}
-		INTERRUPT(0);
-
-
-		OSTimeDelay(100);
+        itoa(buffer, count++, 10);
+        boxfill(COL_FFFFFF, FONT_W * 10, FONT_H * 10, FONT_W * 20, FONT_H * 11);
+        putstring(FONT_W * 10, FONT_H * 10, COL_000000, 1, buffer);
+        taskControl.remove(&taskControl, taskCur);
+        OSTimeDelay(100);
+        // Task can be removed and recovered by other task code
+        // and switch to other task
+        // but can never return!!!
 	}
 }

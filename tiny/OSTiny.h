@@ -84,10 +84,12 @@ struct OSTaskLink {
 	__SUPER(MultiLinkBase, OSTaskLink, OSTask);
 
 	OSTask * (*activate)(OSTaskLink * that, OSTask * link);
+	OSTask * (*deactivate)(OSTaskLink * that, OSTask * link);
 };
 extern OSTaskLink taskLink;
 void _OSTaskLink(OSTaskLink * that, int index);
 OSTask * OSTaskLink_activate(OSTaskLink * that, OSTask * link);
+OSTask * OSTaskLink_deactivate(OSTaskLink * that, OSTask * link);
 ////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////

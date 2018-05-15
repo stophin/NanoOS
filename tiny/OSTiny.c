@@ -83,32 +83,38 @@ void _OSTaskLink(OSTaskLink * that, int index) {
 	_MultiLinkBase(&that->super, index);
 	
 	that->activate = OSTaskLink_activate;
+    that->deactivate = OSTaskLink_deactivate;
 }
 OSTask * OSTaskLink_activate(OSTaskLink * that, OSTask * link) {
-	if (link) {
-		that->insertLink(that, link, NULL, NULL);
-	} else {
-		OSTask * task, * _task;
-		task = that->next(that, that->link);
-		if (task) {
-			do {
-				_task = that->next(that, task);
+    if (link) {
+        taskControl.insertLink(&taskControl, link, NULL, NULL);
+    } else {
+        OSTask * task, * _task;
+        task = that->next(that, that->link);
+        if (task) {
+            do {
+                _task = that->next(that, task);
 
-				that->removeLink(that, task);
-				taskControl.insertLink(&taskControl, task, NULL, NULL);
+                that->removeLink(that, task);
+                taskControl.insertLink(&taskControl, task, NULL, NULL);
 
-				task = _task;
-			} while(that->link && task);
-		}
-	}
-	return link;
+                task = _task;
+            } while(that->link && task);
+        }
+    }
+    return link;
+}
+OSTask * OSTaskLink_deactivate(OSTaskLink * that, OSTask * link) {
+    if (link) {
+        that->insertLink(that, link, NULL, NULL);
+    }
+    return link;
 }
 /////////////////////////////////////////////////////////////
 OSTask * OSTaskControl_create(OSTaskControl * that, void TASK_FN, void *pdata, void *ldata, int size, int prority) {
 	OSTask * ptask;
 	USTACK * ptos = (USTACK *)(memMan.alloc(&memMan, size * sizeof(USTACK)));
 	if (ptos == NULL) {
-		//disp_str("Task not has a valid stack.");
 		return NULL;
 	}
 	ptask = that->taskPool.get(&that->taskPool);
@@ -144,6 +150,7 @@ OSTask * OSTaskControl_remove(OSTaskControl * that, OSTask * link) {
 			that->taskPool.back(&that->taskPool, link);
 		}
 	}
+	// force task switch
 	OSTickISR();
 	return link;
 }
@@ -173,7 +180,6 @@ void OSContext_suspend(OSContext * that) {
 }
 
 void OSContext_get(OSContext * that) {
-	return;
 }
 
 void OSContext_save(OSContext * that, USTACK * sp) {
@@ -189,7 +195,6 @@ void OSContext_apply(OSContext * that){
 }
 
 void OSContext_resume(OSContext * that) {
-	//disp_int((int)taskCur->offset);
 	far_jump(0, taskCur->offset * 8);
 }
 
@@ -274,9 +279,6 @@ OSTask * OSPriority() {
 	if (taskNext == NULL) {
 		taskNext = taskControl.link;
 	}
-	//disp_int(taskNext->prority);
-	//disp_str_col("Jumping to task", 0x74);
-	//disp_int(taskNext->offset);
 	taskNext->runtime ++;
 	return taskNext;
 }
@@ -285,7 +287,6 @@ void OSContextSwitch(OSTask * task)
 {
 	OSTask * taskNext;
 	if (taskCur == NULL) {
-		//disp_str("taskCur null");
 		return;
 	}
 	if (task) {
@@ -295,45 +296,31 @@ void OSContextSwitch(OSTask * task)
 		taskNext = OSPriority();
 	}
 	if (taskNext == NULL) {
-		//disp_str("taskNext null");
 		return;
 	}
 
-	//Context.get(&Context);// Get main thread context, prepare for context switch
+	Context.get(&Context);// Get main thread context, prepare for context switch
 
-	//Context.save(&Context, (USTACK *)Context.Esp);// Get main thread current stack pointer
+	Context.save(&Context, (USTACK *)Context.Esp);// Get main thread current stack pointer
 
 	taskCur = taskNext;// Get next task according to prority
 
 	Context.recover(&Context, taskCur->OSStack);
 
-	//Context.apply(&Context); // Save and swicth context
+	Context.apply(&Context); // Save and swicth context
 
 }
 void OSTickISR()
 {
 	if (!Context.OSStart) {
-		//disp_str("OS not started");
 		return;
 	}
 	if (OSCritical) {
-		//disp_str("OS critical");
 		return;
 	}
 	if (IntDisabled) {
-		//disp_str("IT disabled");
 		return;// If interrupt is disabled
 	}
-	//Context.suspend(&Context);// Stop main thread to simulate interrupt
-	//if (IntDisabled)
-	//{
-		//disp_str("IT disabled2");
-		// In case of interrupt being enabled before suspend
-		//Context.resume(&Context);// Continue main thread to simulate interrupt return
-		//return;
-	//}
-
-	//Context.suspend(&Context);
 	
 	ENTER_CRITICAL();
 
@@ -360,7 +347,7 @@ USTACK *OSTaskStackInit(void TASK_FN, void *pdata, void *ldata, USTACK *ptos)
 	*--stk = (UREG)0x11111111; /* EBP = 0x11111111 */
 	*--stk = (UREG)0x22222222; /* ESI = 0x22222222 */
 	*--stk = (UREG)0x33333333; /* EDI = 0x33333333 */
-	//these parameters is important
+	//these parameters are important
 	*--stk = (UREG)ldata; /* Simulate call to function with argument */
 	*--stk = (UREG)pdata; /* Simulate call to function with argument */
 	*--stk = (UREG)0x00000000; //Paramter is esp + 4
@@ -373,7 +360,6 @@ void OSInit(char * memory, int limit) {
 
 	mem = memMan.memPool.get(&memMan.memPool);
 	if (mem == NULL) {
-		//disp_str("Not available memPool");
 		return;
 	}
 	mem->addr = (MEM_ADDR)memory;
@@ -397,13 +383,11 @@ void OSStartHighReady(void)
 {
 	USTACK ** stack;
 	if (taskCur == NULL) {
-		//disp_str_col("No task.", 0x74);
 		return;
 	}
 
 	stack = &taskCur->OSStack;
 	if (stack == NULL) {
-		//disp_str_col("No task stack.", 0x74);
 		return;
 	}
 	Context.OSStart = 1;
