@@ -5,15 +5,15 @@ HOWTO:
 1. Can only compiled with Linux OS. Needed tools:  
  gcc, nasm, dd  
   Use the following commands to build an img:  
-  >>make clean  
-  >>make raw  
-  >>make  
+  make clean  
+  make raw  
+  make  
     
 2. Can run image in Linux or Windows.   
  Linux:  
  	Needed VM tools: bochs, and X-system  
-	>>cd image  
-	>>bochs -f nano_linux.bxrc  
+	cd image  
+	bochs -f nano_linux.bxrc  
 	if you changed the location or configuration of bochs then you need to change .bxrc  to fit your system  
  Window:  
  	Change image/nano.bxrc (path of romimage or vgaromimage) to fit your system,   
