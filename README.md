@@ -5,15 +5,15 @@ HOWTO:
 1. Can only compiled with Linux OS. Needed tools:  
  gcc, nasm, dd  
   Use the following commands to build an img:  
-  $make clean  
-  $make raw  
-  $make  
+  >>make clean  
+  >>make raw  
+  >>make  
     
 2. Can run image in Linux or Windows.   
  Linux:  
  	Needed VM tools: bochs, and X-system  
-	$cd image  
-	$bochs -f nano_linux.bxrc  
+	>>cd image  
+	>>bochs -f nano_linux.bxrc  
 	if you changed the location or configuration of bochs then you need to change .bxrc  to fit your system  
  Window:  
  	Change image/nano.bxrc (path of romimage or vgaromimage) to fit your system,   
@@ -27,6 +27,9 @@ ABOUT:
 2. Memory management is also in tiny/ folder. It's managing a pre-defined space.   
  This pre-fefined space is the address of the memory, so it can be tested given an  
  char array and it's address. You can run the test in Tests/ folder.  
+ 
+3. The memory distribution has changed since the new version.  
+  So the minimum memory required 1024M, see boot/loader.asm for detail.  
   
 TODO:  
 1. Known BUG:  
