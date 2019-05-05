@@ -2,6 +2,8 @@
 // author: stophin
 //
 
+#pragma once
+
 // Define data type
 typedef	unsigned short		WORD;
 typedef	unsigned long		DWORD;
