@@ -160,4 +160,6 @@ USTACK *OSTaskStackInit(void TASK_FN, void *pdata,void *ldata, USTACK *ptos);
 void OSStartHighReady(void);
 ///////////////////////////////////////////////////////////////////
 
+void int_handler30();
+
 #endif

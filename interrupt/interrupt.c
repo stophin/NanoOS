@@ -69,6 +69,8 @@ void init_gdtidt() {
 	set_gatedesc(idt + 0x2c, (DWORD)int_handler2c_asm, 1 * 8, 0x008e);//8e interrupt gate
 	// timer IRQ 0x00
 	set_gatedesc(idt + 0x20, (DWORD)int_handler20_asm, 1 * 8, 0x008e);//8e interrupt gate
+	// Call Gate
+	set_gatedesc(idt + 0x30, (DWORD)int_handler30_asm, 1 * 8, 0x008e + 0x60);//8e interrupt gate
 	// initialize exceptions
 	init_exception(idt);
 	// limit: 0x7ff = 256 * 8 - 1

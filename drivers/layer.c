@@ -62,6 +62,12 @@ void layer_set(LAYER * lay, BYTE * buf, INT xsize, INT ysize, BYTE col_inv) {
 	lay->vy0 = 0;
 	lay->mx0 = 0;
 	lay->my0 = 0;
+	//memset(buf, xsize * ysize, col_inv);
+	for (int i = 0; i < xsize; i ++) {
+		for (int j = 0; j < ysize; j++) {
+			buf[j * xsize + i] = col_inv;
+		}
+	}
 	return;
 }
 

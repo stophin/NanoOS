@@ -57,20 +57,28 @@ void taskEXE(void *pParam, void *lParam) {
 	char c;
 
 	LAYER * layer_exe = (LAYER*)lParam;
+	
+    // draw window
+    draw_window(layer_exe);
+    // set position
+    layer_slide(layer_ctl, layer_exe, layer_exe->vx0, layer_exe->vy0);
 
     //call parameter as code
-    itoa(buffer, ((int (*)())pParam)(), 10);
+    itoa(buffer, ((int (*)())pParam)(taskCur), 10);
     layer_string(layer_ctl, layer_exe, FONT_W, FONT_H, COL_848484, COL_FFFFFF, 1, buffer);
 
-    itoa(buffer, layer_exe->height, 10);
+    itoa(buffer, taskCur->offset, 10);
     layer_string(layer_ctl, layer_exe, FONT_W, FONT_H * 2, COL_848484, COL_FFFFFF, 1, buffer);
 
-    memMan.free(&memMan, (MEM_ADDR)pParam);
+    //memMan.free(&memMan, (MEM_ADDR)pParam);
 
-    memman_free_4k(&memman, (DWORD)layer_exe->buf, layer_exe->bxsize * layer_exe->bysize);
-    layer_free(layer_ctl, layer_exe);
+    //memman_free_4k(&memman, (DWORD)layer_exe->buf, layer_exe->bxsize * layer_exe->bysize);
+    //layer_free(layer_ctl, layer_exe);
 
 	for (;;) {
+		itoa(buffer, ((int (*)())pParam)(taskCur), 10);
+		layer_string(layer_ctl, layer_exe, FONT_W * 10, 2 * FONT_H, COL_848484, COL_FFFFFF, 2, buffer);
+		
         OSTimeDelay(100);
 	}
 }
@@ -80,7 +88,7 @@ void taskGUI(void *pParam, void *lParam) {
 	char c;
 
 	int i = 0;
-	INT mem_size = mem_test(0x00400000, 0xbfffffff);
+	INT mem_size = 1024 * 1024;//mem_test(0x00400000, 0xbfffffff);
 	// create layer
 	layer_ctl = layer_ctl_init(&memman, bootinfo.vram, bootinfo.scrnx, bootinfo.scrny);
 	layer_back = layer_alloc(layer_ctl);
@@ -199,15 +207,14 @@ void init(void * pParam,void * lParam) {
                 if (c == 'c' || c == 'b') {
                     BYTE * code = (BYTE *)memMan.alloc(&memMan, 1000);
                     // int code() { return 0xa;}
-                    memforce(code, "\x55\x89\xE5\xB8\x0A\x00\x00\x00\x5D\xC3\x00", 11);
+                    //memforce(code, "\x55\x89\xE5\xB8\x0A\x00\x00\x00\x5D\xC3\x00", 11);
+					memforce(code, "\x55\x89\xe5\xcd\x30\xb8\x00\x00\x00\x00\x5d\xc3\x00", 13);
 
                     // create layer
                     LAYER * layer_exe = layer_alloc(layer_ctl);
                     BYTE * buf_exe = (BYTE *) memman_alloc_4k(&memman, 100 * 100);
                     // set layer
                     layer_set(layer_exe, buf_exe, 100, 100, 0);
-                    // draw window
-                    draw_window(layer_exe);
                     // set depth height
                     layer_height(layer_ctl, layer_exe, count + 3);
                     // set position

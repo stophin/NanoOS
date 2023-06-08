@@ -394,3 +394,15 @@ void OSStartHighReady(void)
 	
 	far_jump(0, taskCur->offset * 8);
 }
+
+
+char g_buffer[100];
+void int_handler30() {
+	memset(g_buffer, 100, 0);
+	memcpy(g_buffer, "handler30:");
+	itoa_b(taskCur->runtime, g_buffer + 30, 10);
+	strcat(g_buffer, g_buffer + 30);
+	boxfill(COL_FFFFFF, FONT_W * 30, FONT_H * 0, FONT_W * 50, FONT_H * 1);
+	putstring(FONT_W * 30, FONT_H * 0, COL_000000, 1, g_buffer);
+	return;
+}

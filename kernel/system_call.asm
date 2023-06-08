@@ -11,7 +11,7 @@ global	io_store_eflags, io_load_eflags, store_cr0, load_cr0
 global	load_gdtr, load_idtr, load_ldtr, load_enable
 global	task_switch3, task_switch4, far_jump
 global	write_mem, check_mem
-global	int_handler21_asm, int_handler2c_asm, int_handler20_asm
+global	int_handler21_asm, int_handler2c_asm, int_handler20_asm, int_handler30_asm
 
 ; void io_hlt(void)
 io_hlt:
@@ -195,5 +195,32 @@ int_handler20_asm:
 	pop ds
 	pop es
 
+	leave
+	iretd
+	
+[extern int_handler30]
+; void int_handler30_asm()
+int_handler30_asm:
+	push ebp
+	mov	ebp, esp
+	cli
+
+	push es
+	push ds
+
+	mov eax, esp
+	push eax
+	mov ax, ss
+	mov ds, ax
+	mov es, ax
+	
+	call int_handler30
+
+	pop eax
+	
+	pop ds
+	pop es
+	
+	sti
 	leave
 	iretd

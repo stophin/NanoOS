@@ -60,6 +60,12 @@ asm : ${IMAGE_DIR}kernel.bin
 # Inspect objdump
 dump: kernel/kernel.o
 	objdump -d $<
+	
+app: ${ENTRY} ${OBJECT}
+	gcc -O0 -ffreestanding -m32 -c app.c -o app.o
+	ld -o app.elf -s -Ttext 0x30000000 -e main -m elf_i386  ${EXTERNAL} $^ app.o
+	objcopy -I elf32-i386 -O binary -R .note -R .comment -S app.elf app.bin
+	objdump -S app.elf > app_elf.c
 
 # Clean
 clean:

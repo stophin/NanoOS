@@ -7,6 +7,7 @@
 extern void int_handler2c_asm();
 extern void int_handler21_asm();
 extern void int_handler20_asm();
+extern void int_handler30_asm();
 
 extern void io_hlt(void);
 extern void io_cli(void);
