@@ -26,7 +26,7 @@
 
 // VGA memory used by SCRN_INFO
 // previously defined in boot/vga_start.asm
-#define VMODE	0x0ff0
+#define VMODE	0x090ff0
 // SCRN_INFO
 typedef struct BOOTINFO {
 	BYTE vmode;		// VGA mode

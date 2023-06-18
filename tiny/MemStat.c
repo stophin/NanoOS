@@ -38,6 +38,8 @@ MemStat * _MemStat(MemStat * that, MEM_ADDR addr, MEM_SIZE size) {
 	that->final = MemStat_final;
 
 	that->set(that, size);
+	
+   that->stat = MEM_AVAILABLE;
 	return that;
 }
 ///////////////////////////////////////////////////////////

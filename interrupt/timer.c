@@ -29,8 +29,12 @@ void int_handler20(DWORD *esp) {
 	if (timer_ctl.counter >= 1) {
 		timer_ctl.counter = 0;
 		OSTickISR();
-		memcpy(buffer_t, "Task:");
-		itoa(buffer_t + 5, taskCur->offset, 10);
+		memcpy(buffer_t, "T:");
+		itoa(buffer_t + 30, taskCur->offset, 10);
+		itoa(buffer_t + 60, taskCur->runtime, 10);
+		strcat(buffer_t, buffer_t + 30);
+		strcat(buffer_t, " r:");
+		strcat(buffer_t, buffer_t + 60);
 		boxfill(COL_FFFFFF, FONT_W * 20, FONT_H * 3, FONT_W * 30, FONT_H * 4);
 		putstring(FONT_W * 20, FONT_H * 3, COL_000000, 1, buffer_t);
 	}

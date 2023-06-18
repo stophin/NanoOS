@@ -41,3 +41,22 @@ vga_start_hd:
 	mov	dword [VRAM], 0xe0000000
 
 	ret
+	
+vga_start_vbe:	
+	mov bx, 0x4180	; VBE card, 640*480*8bit
+					; Video Electronics Standards Association-BIOS Extension
+					; VBE display mode(BX)
+					; 0x101 640*480*8bit
+					; 0x103 800*600*8bit
+					; 0x105 1024*768*8bit
+					; 0x107 1280*1024*8bit
+	mov ax, 0x4f02
+	int 0x10
+
+
+	mov	byte [VMODE], 32
+	mov	word [SCRNX], 1440
+	mov	word [SCRNY], 900
+	mov	dword [VRAM], 0xe0000000
+
+	ret

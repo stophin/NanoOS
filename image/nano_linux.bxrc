@@ -3,13 +3,14 @@
 ###############################################################
 
 # how much memory the emulated machine will have
-megs: 32
+megs: 1024
 
 # added
 log: -
 debugger_log:-
 cpu:count=1,ips=22100000, reset_on_triple_fault=1, cpuid_limit_winnt=0, msrs="msrs.def"
 vga: extension=vbe
+clock: sync=realtime, time0=local
 
 # filename of ROM images
 romimage: file=/usr/share/bochs/BIOS-bochs-latest

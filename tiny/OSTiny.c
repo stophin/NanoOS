@@ -24,7 +24,7 @@ void OSTask_set(OSTask * that, DWORD esp, DWORD task_ptr, int offset) {
 	that->tss.edx = 0;
 	that->tss.ebx = 0;
 	that->tss.esp = esp;
-	that->tss.ebp = 0;
+	that->tss.ebp = esp;
 	that->tss.esi = 0;
 	that->tss.edi = 0;
 	that->tss.es = 2 * 8;
@@ -33,6 +33,7 @@ void OSTask_set(OSTask * that, DWORD esp, DWORD task_ptr, int offset) {
 	that->tss.ds = 2 * 8;
 	that->tss.fs = 2 * 8;
 	that->tss.gs = 2 * 8;
+	that->tss.cr3 = 0x300000;
 	
 	// offset is set in pool and cannot be changed
 	//that->offset = offset;

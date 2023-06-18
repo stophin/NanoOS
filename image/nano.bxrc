@@ -3,7 +3,7 @@
 ###############################################################
 
 # how much memory the emulated machine will have
-megs: 32
+megs: 1024
 
 # added
 log: -
@@ -13,16 +13,16 @@ vga: extension=vbe
 clock: sync=realtime, time0=local
 
 # filename of ROM images
-romimage: file=D:/Bochs-2.6.8/BIOS-bochs-latest
-vgaromimage: file=D:/Bochs-2.6.8/VGABIOS-lgpl-latest
+romimage: file="C:/Program Files (x86)/Bochs-2.6.8/BIOS-bochs-latest"
+vgaromimage: file="C:/Program Files (x86)/Bochs-2.6.8/VGABIOS-lgpl-latest"
 
 # what disk images will be used 
 floppya: 1_44=nano.img, status=inserted
-floppyb: 1_44=a.img, status=inserted
+#floppyb: 1_44=a.img, status=inserted
 
 # hard disk
 ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
-#ata0-master: type=disk, path="D:/Bochs-2.6.8/dlxlinux/hd10meg.img", cylinders=306, heads=4, spt=17
+#ata0-master: type=disk, path="C:/Program Files (x86)/Bochs-2.6.8/dlxlinux/hd10meg.img", cylinders=306, heads=4, spt=17
 
 # choose the boot disk.
 boot: floppy

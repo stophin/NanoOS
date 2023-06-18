@@ -23,9 +23,20 @@ all: image
 
 # This is the actual disk image that the computer loads
 # which is the combination of our compiled bootsector and kernel
-image : ${BOOT} ${LOADER} ${IMAGE_DIR}kernel.bin
+image: ${IMAGE}.img ${BOOT} ${LOADER} ${IMAGE_DIR}kernel.bin
+	dd if=${BOOT} of=${IMAGE}.img bs=512 count=1 conv=notrunc
+	sudo mount ${IMAGE}.img /mnt/image/ -t vfat -o loop 
+	sudo cp ${LOADER}	/mnt/image/
+	sudo cp ${IMAGE_DIR}kernel.bin /mnt/image
+	sudo sync
+	sudo umount /mnt/image/
+
+boot: ${IMAGE}.img ${BOOT} 
+	dd if=${BOOT} of=${IMAGE}.img bs=512 count=1 conv=notrunc
+	
+force : 
 	cp ${BOOT} ${LOADER} ${IMAGE_DIR}
-	cat $^ > ${IMAGE}.bin
+	cat ${BOOT} ${LOADER} ${IMAGE_DIR}kernel.bin> ${IMAGE}.bin
 	dd if=${IMAGE}.bin of=${IMAGE}.img bs=1440K count=1 conv=notrunc
 
 # This builds the binary of our kernel from two object files:
@@ -33,7 +44,7 @@ image : ${BOOT} ${LOADER} ${IMAGE_DIR}kernel.bin
 # - the compiled C kernel
 ${IMAGE_DIR}kernel.bin : ${ENTRY} ${OBJECT}
 	#ld -Ttext 0x1000 --oformat binary -e main -m elf_i386 -o $@ $^
-	ld -o ${IMAGE_DIR}kernel.elf -s -Ttext 0x30000000 -e main -m elf_i386  ${EXTERNAL} $^
+	ld -o ${IMAGE_DIR}kernel.elf -s -Ttext 0x100000 -e main -m elf_i386  ${EXTERNAL} $^
 	objcopy -I elf32-i386 -O binary -R .note -R .comment -S ${IMAGE_DIR}kernel.elf $@
 
 # Generic rule for compiling C code to an object file
@@ -63,7 +74,7 @@ dump: kernel/kernel.o
 	
 app: ${ENTRY} ${OBJECT}
 	gcc -O0 -ffreestanding -m32 -c app.c -o app.o
-	ld -o app.elf -s -Ttext 0x30000000 -e main -m elf_i386  ${EXTERNAL} $^ app.o
+	ld -o app.elf -s -Ttext 0x100000 -e main -m elf_i386  ${EXTERNAL} $^ app.o
 	objcopy -I elf32-i386 -O binary -R .note -R .comment -S app.elf app.bin
 	objdump -S app.elf > app_elf.c
 
@@ -71,3 +82,13 @@ app: ${ENTRY} ${OBJECT}
 clean:
 	rm -rf ${IMAGE_DIR}*.bin ${IMAGE_DIR}*.elf ${BOOT} ${LOADER}
 	rm -rf ${ENTRY} ${OBJECT} ${LOADER} ${LOADER_ELF}
+
+#####################################
+
+bochs:
+	cd image && sudo bochs -f nano_linux.bxrc
+
+qemu:
+	cd image && qemu-system-x86_64 -m 1024 -fda nano.img -boot a
+
+#####################################
